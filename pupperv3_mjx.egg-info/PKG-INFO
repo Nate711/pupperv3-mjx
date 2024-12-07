@@ -1,0 +1,21 @@
+Metadata-Version: 2.1
+Name: pupperv3_mjx
+Version: 0.1
+Summary: A short description of your project
+Author: Nathan Kau, Google
+Author-email: nathan.kau@gmail.com
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: brax
+Requires-Dist: jax
+Requires-Dist: mujoco
+Requires-Dist: mujoco_mjx
+Requires-Dist: matplotlib
+Requires-Dist: plotly
+Requires-Dist: ml_collections
+Requires-Dist: etils
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: mediapy
+Requires-Dist: wandb
