@@ -129,6 +129,8 @@ class StartPositionRandomization:
     y_max: float
     z_min: float
     z_max: float
+    roll_pitch_max_angle_deg: float
+    motor_angle_max_perturbation_deg: float
 
 
 def small_quaternion(rng, max_angle_deg=30, max_yaw_deg=180):
@@ -199,7 +201,9 @@ def randomize_qpos(
 ):
     """Return qpos with randomized position of first body. Do not use rng again!"""
 
-    rng, key_x, key_y, key_z, key_quat = jax.random.split(rng, 5)
+    rng, key_x, key_y, key_z, key_quat, key_motor_angles = jax.random.split(
+        rng, 6
+    )
     qpos = qpos.at[:3].set(
         jax.random.uniform(
             key_z,
@@ -220,6 +224,22 @@ def randomize_qpos(
             ),
         )
     )
-    random_quat = small_quaternion(key_quat, max_angle_deg=30, max_yaw_deg=180)
+    random_quat = small_quaternion(
+        key_quat,
+        max_angle_deg=start_position_config.roll_pitch_max_angle_deg,
+        max_yaw_deg=180,
+    )
+
+    motor_angle_perturbs = jax.random.uniform(
+        key_motor_angles,
+        (12,),
+        minval=-start_position_config.motor_angle_max_perturbation_deg
+        * jp.pi
+        / 180,
+        maxval=start_position_config.motor_angle_max_perturbation_deg
+        * jp.pi
+        / 180,
+    )
+    qpos = qpos.at[7:].set(qpos[7:] + motor_angle_perturbs)
     qpos = qpos.at[3:7].set(random_quat)
     return qpos

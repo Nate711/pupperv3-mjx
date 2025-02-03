@@ -13,16 +13,70 @@ from brax.io import mjcf
 
 def test_randomize_qpos():
     start_position_config = domain_randomization.StartPositionRandomization(
-        x_min=-0.5, x_max=0.5, y_min=-0.5, y_max=0.5, z_min=-0.5, z_max=0.5
+        x_min=-0.5,
+        x_max=0.5,
+        y_min=-0.5,
+        y_max=0.5,
+        z_min=-0.5,
+        z_max=0.5,
+        roll_pitch_max_angle_deg=30,
+        motor_angle_max_perturbation_deg=20,
     )
 
     rng = jax.random.PRNGKey(0)
 
     qpos = domain_randomization.randomize_qpos(
-        jp.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], dtype=jp.float32), start_position_config, rng
+        jp.array(
+            [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                14,
+                14,
+                15,
+                16,
+                17,
+                18,
+            ],
+            dtype=jp.float32,
+        ),
+        start_position_config,
+        rng,
     )
 
-    expected_qpos = jp.array([-0.184, 0.165, 0.278, 0.709, 0.0, 0.0, 0.705, 7.0, 8.0, 9.0, 10.0])
+    expected_qpos = jp.array(
+        [
+            -0.20615625,
+            0.10745406,
+            0.45373702,
+            0.8108043,
+            0.07608874,
+            0.24387082,
+            0.5266251,
+            6.6793675,
+            8.2808485,
+            9.132309,
+            9.977286,
+            10.996554,
+            11.906565,
+            14.232214,
+            13.827051,
+            15.165979,
+            15.6708145,
+            16.916878,
+            18.20918,
+        ]
+    )
 
     assert jp.isclose(
         qpos, expected_qpos, atol=1e-3
@@ -66,7 +120,9 @@ def test_domain_randomize():
     assert sys.actuator_biasprm.shape == (10, 12, 10)
 
     # Test friction changed
-    assert (sys.geom_friction[:, :, 0] >= 2.0).all() and (sys.geom_friction[:, :, 0] <= 10.0).all()
+    assert (sys.geom_friction[:, :, 0] >= 2.0).all() and (
+        sys.geom_friction[:, :, 0] <= 10.0
+    ).all()
 
     # Test actuator gains changed
     assert (sys.actuator_gainprm[:, :, 0] >= 1.1 * original_kp).all() and (
