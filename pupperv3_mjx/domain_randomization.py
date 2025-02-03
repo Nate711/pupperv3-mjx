@@ -25,18 +25,26 @@ def domain_randomize(
     def rand(rng):
         rng, key = jax.random.split(rng, 2)
         # friction
-        friction = jax.random.uniform(key, (1,), minval=friction_range[0], maxval=friction_range[1])
+        friction = jax.random.uniform(
+            key, (1,), minval=friction_range[0], maxval=friction_range[1]
+        )
         friction = sys.geom_friction.at[:, 0].set(friction)
         # actuator
         rng, key_kp, key_kd = jax.random.split(rng, 3)
         kp = (
             jax.random.uniform(
-                key_kp, (1,), minval=kp_multiplier_range[0], maxval=kp_multiplier_range[1]
+                key_kp,
+                (1,),
+                minval=kp_multiplier_range[0],
+                maxval=kp_multiplier_range[1],
             )
             * sys.actuator_gainprm[:, 0]
         )
         kd = jax.random.uniform(
-            key_kd, (1,), minval=kd_multiplier_range[0], maxval=kd_multiplier_range[1]
+            key_kd,
+            (1,),
+            minval=kd_multiplier_range[0],
+            maxval=kd_multiplier_range[1],
         ) * (-sys.actuator_biasprm[:, 2])
 
         gain = sys.actuator_gainprm.at[:, 0].set(kp)
@@ -47,10 +55,18 @@ def domain_randomize(
             key_com,
             (3,),
             minval=jp.array(
-                [body_com_x_shift_range[0], body_com_y_shift_range[0], body_com_z_shift_range[0]]
+                [
+                    body_com_x_shift_range[0],
+                    body_com_y_shift_range[0],
+                    body_com_z_shift_range[0],
+                ]
             ),
             maxval=jp.array(
-                [body_com_x_shift_range[1], body_com_y_shift_range[1], body_com_z_shift_range[1]]
+                [
+                    body_com_x_shift_range[1],
+                    body_com_y_shift_range[1],
+                    body_com_z_shift_range[1],
+                ]
             ),
         )
         body_com = sys.body_ipos.at[1].set(sys.body_ipos[1] + body_com_shift)
@@ -178,10 +194,12 @@ def random_z_rotation_quaternion(rng):
     return jp.concatenate((cos_yaw, jp.zeros(2), sin_yaw))
 
 
-def randomize_qpos(qpos: jp.array, start_position_config: StartPositionRandomization, rng):
+def randomize_qpos(
+    qpos: jp.array, start_position_config: StartPositionRandomization, rng
+):
     """Return qpos with randomized position of first body. Do not use rng again!"""
 
-    rng, key_x, key_y, key_z, key_yaw = jax.random.split(rng, 5)
+    rng, key_x, key_y, key_z, key_quat = jax.random.split(rng, 5)
     qpos = qpos.at[:3].set(
         jax.random.uniform(
             key_z,
@@ -202,6 +220,6 @@ def randomize_qpos(qpos: jp.array, start_position_config: StartPositionRandomiza
             ),
         )
     )
-    random_yaw_quat = random_z_rotation_quaternion(key_yaw)
-    qpos = qpos.at[3:7].set(random_yaw_quat)
+    random_quat = small_quaternion(key_quat, max_angle_deg=30, max_yaw_deg=180)
+    qpos = qpos.at[3:7].set(random_quat)
     return qpos
