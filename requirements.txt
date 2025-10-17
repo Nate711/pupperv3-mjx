@@ -1,8 +1,8 @@
-brax==0.12.1
-jax==0.5.0
-jaxlib==0.5.0
-mujoco==3.2.7
-mujoco_mjx==3.2.7
+brax
+jax
+jaxlib
+mujoco
+mujoco_mjx
 matplotlib
 plotly
 ml_collections
